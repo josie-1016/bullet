@@ -83,16 +83,6 @@ func NewECPrimeGroupKey(n int) CryptoParams {
 		j += 1
 	}
 
-	//this.C = btcec.S256()
-	//this.KC = btcec.S256()
-	//this.BPG = gen1Vals
-	//this.BPH = gen2Vals
-	//this.N = btcec.S256().N
-	//this.U = u
-	//this.V = n
-	//this.G = cg
-	//this.H = ch
-
 	return CryptoParams{
 		btcec.S256(),
 		btcec.S256(),

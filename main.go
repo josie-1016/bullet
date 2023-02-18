@@ -7,104 +7,37 @@ import (
 )
 
 func main() {
-	//ec := rangproof.GetECPrimeGroupKey()
-	ran, com1, open1 := rangproof.RPProve(big.NewInt(5), nil)
+	// 生成范围证明:eg.x>5
+	//rangproof.EC = rangproof.NewECPrimeGroupKey(3)
+	ran, com1, open1 := rangproof.RPProve(big.NewInt(5), nil) //参数为私密值和选择的致盲因子（可为空），返回证明、pedersen承诺和使用的致盲因子
 	fmt.Println(ran)
 	fmt.Println(com1)
 	fmt.Println(open1)
+
+	//验证证明，输入证明和pedersen承诺
 	if rangproof.RPVerify(ran, com1) {
 		fmt.Println("Range Proof Verification works")
 	} else {
-		fmt.Println("*****Range Proof FAILURE")
+		fmt.Println("Range Proof FAILURE")
 	}
-	ranall, comall, _ := rangproof.SubProof(big.NewInt(5), big.NewInt(5), com1, open1)
+
+	//参数为v1的承诺和使用的致盲因子，生成v1 - v2为非负整数的证明、v1 - v2的承诺和致盲因子
+	ran2, com2, _ := rangproof.SubProof(big.NewInt(5), big.NewInt(5), com1, open1)
+
+	//可以将生成的com1、com2和ran2发送给另一方，证明自己的值大于5
+	//另一方先判断承诺是否正确，然后验证两者差值的证明，如通过则证明大于0，满足条件
+
+	//可以进行“承诺 - 数值”的同态运算，致盲因子不变
 	comv, _ := rangproof.PedersenSubNum(com1, big.NewInt(5))
-	if comall.Comm.Equal(comv.Comm) {
+	//测试是否与SubProof方法计算出的承诺值相同
+	if com2.Comm.Equal(comv.Comm) {
 		fmt.Println("commit right")
 	}
-	comvv := new(rangproof.PedersenCommit)
-	comvv.Comm = comv.Comm
-	if rangproof.RPVerify(ranall, comvv) {
+	//验证
+	if rangproof.RPVerify(ran2, comv) {
 		fmt.Println("Range Proof Verification works")
 	} else {
 		fmt.Println("*****Range Proof FAILURE")
 	}
 
-	//BigInteger number = BigInteger.valueOf(5);
-	//BigInteger randomness = ProofUtils.randomNumber();
-	//
-	//GeneratorParams parameters = GeneratorParams.generateParams(256,curve);
-	//GroupElement v = parameters.getBase().commit(number, randomness);
-	//PeddersenCommitment<?> witness = new PeddersenCommitment<>(parameters.getBase(),number, randomness);
-	//BouncyCastleECPoint.addCount=0;
-	//BouncyCastleECPoint.expCount=0;
-	//RangeProof proof = new RangeProofProver().generateProof(parameters, v, witness);
-	//System.out.println(BouncyCastleECPoint.expCount);
-	//System.out.println(BouncyCastleECPoint.addCount);
-	//RangeProofVerifier verifier = new RangeProofVerifier();
-	//verifier.verify(parameters, v, proof);
-
-	//rp := new(RangeProof.BulletProof)
-	//rp.Setup(4)
-	//
-	////生成commit
-	////randomness, _ := rand.Int(rand.Reader, btcec.S256().N)
-	////pd := new(RangeProof.PedersenBase)
-	////V := pd.Commit(big.NewInt(5), randomness)
-	//////witness
-	////witness := new
-	//
-	//ran, com1, open1 := rp.Proof(big.NewInt(5), nil)
-	//fmt.Println(ran)
-	//fmt.Println(com1)
-	//fmt.Println(open1)
-	//
-	//if rp.Verify(ran, com1) {
-	//	fmt.Println("Range Proof Verification works")
-	//} else {
-	//	fmt.Println("*****Range Proof FAILURE")
-	//}
-	////com2, _ := rp.PedersenSubNum(com1, big.NewInt(5))
-	////fmt.Println(com2)
-	//ranall, comall, _ := rp.SubProof(big.NewInt(5), big.NewInt(5), com1, open1)
-	//////_, comall, _ := rp.SubProof(big.NewInt(5), big.NewInt(5), com1, open1)
-	////
-	////给验证者com1,ran,5，ranall
-	//comv, _ := rp.PedersenSubNum(com1, big.NewInt(5))
-	//if comall.Comm.Equal(comv.Comm) {
-	//	fmt.Println("commit right")
-	//}
-	//comvv := new(RangeProof.PedersenCommit)
-	//comvv.Comm = comv.Comm
-	//if rp.Verify(ranall, comvv) {
-	//	fmt.Println("Range Proof Verification works")
-	//} else {
-	//	fmt.Println("*****Range Proof FAILURE")
-	//}
-
-	//把3个commit都上链，计算c* = c1-c2,如果c*==c，再验证c的proof
-
-	//ran2 := rp.Proof(big.NewInt(0))
-	//fmt.Println(ran2.Comm)
-
-	//ran2.Comm = com2
-	//if rp.Verify(ran2) {
-	//	fmt.Println("Range Proof Verification works")
-	//} else {
-	//	fmt.Println("*****Range Proof FAILURE")
-	//}
-	//TODO:字符串转为结构体(编码方式，应该输出byte)
-	//if rp.Verify(rp.Proof(big.NewInt(5))) {
-	//	fmt.Println("Range Proof Verification works")
-	//} else {
-	//	fmt.Println("*****Range Proof FAILURE")
-	//}
-
-	//rangproof.EC = rangproof.NewECPrimeGroupKey(4) //输入n
-	//// Testing smallest number in range
-	//if rangproof.RPVerify(rangproof.RPProve(big.NewInt(3))) {
-	//	fmt.Println("Range Proof Verification works")
-	//} else {
-	//	fmt.Println("*****Range Proof FAILURE")
-	//}
 }

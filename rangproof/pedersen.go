@@ -8,6 +8,12 @@ type PedersenCommit struct {
 	Comm ECPoint
 }
 
+func PerdersenCommit(v *big.Int, gamma *big.Int) (*PedersenCommit, error) {
+	commit := new(PedersenCommit)
+	commit.Comm = EC.G.Mult(v).Add(EC.H.Mult(gamma)) //承诺V
+	return commit, nil
+}
+
 func PedersenSubNum(p *PedersenCommit, v *big.Int) (*PedersenCommit, error) {
 	commit := new(PedersenCommit)
 	commit.Comm = p.Comm.Add(EC.G.Mult(v).Neg())

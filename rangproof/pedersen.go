@@ -1,6 +1,9 @@
 package rangproof
 
-import "math/big"
+import(
+	"math/big"
+	"crypto/rand"
+) 
 
 type PedersenCommit struct {
 	//G ECPoint // G value for commitments of a single value
@@ -10,6 +13,9 @@ type PedersenCommit struct {
 
 func PerdersenCommit(v *big.Int, gamma *big.Int) (*PedersenCommit, error) {
 	commit := new(PedersenCommit)
+	if gamma == nil {
+		gamma, _ = rand.Int(rand.Reader, EC.N)
+	}
 	commit.Comm = EC.G.Mult(v).Add(EC.H.Mult(gamma)) //承诺V
 	return commit, nil
 }

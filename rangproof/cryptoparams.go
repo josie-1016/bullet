@@ -8,7 +8,6 @@ import (
 	"crypto/elliptic"
 	"crypto/sha256"
 	"encoding/binary"
-	"github.com/btcsuite/btcd/btcec/v2"
 	"math/big"
 )
 
@@ -38,7 +37,7 @@ func check(e error) {
 
 // NewECPrimeGroupKey returns the curve (field),
 // Generator 1 x&y, Generator 2 x&y, order of the generators
-func NewECPrimeGroupKey(n int) CryptoParams {
+func NewECPrimeGroupKey(n int) {
 	curValue := btcec.S256().Gx
 	s256 := sha256.New()
 	gen1Vals := make([]ECPoint, n)
@@ -82,8 +81,7 @@ func NewECPrimeGroupKey(n int) CryptoParams {
 		}
 		j += 1
 	}
-
-	return CryptoParams{
+	EC = CryptoParams{
 		btcec.S256(),
 		btcec.S256(),
 		gen1Vals,
@@ -95,10 +93,10 @@ func NewECPrimeGroupKey(n int) CryptoParams {
 		ch}
 }
 
-func init() {
-	EC = NewECPrimeGroupKey(VecLength)
-	//fmt.Println(EC)
-}
+//func init() {
+//	EC = NewECPrimeGroupKey(VecLength)
+//	//fmt.Println(EC)
+//}
 
 func GetECPrimeGroupKey() CryptoParams {
 	return EC

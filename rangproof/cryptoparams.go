@@ -9,6 +9,7 @@ import (
 	"crypto/sha256"
 	"encoding/binary"
 	"math/big"
+	"github.com/btcsuite/btcd/btcec/v2"
 )
 
 var VecLength = 64

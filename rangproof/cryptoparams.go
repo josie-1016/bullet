@@ -8,8 +8,8 @@ import (
 	"crypto/elliptic"
 	"crypto/sha256"
 	"encoding/binary"
+	"log"
 	"math/big"
-	"github.com/btcsuite/btcd/btcec/v2"
 )
 
 var VecLength = 64
@@ -82,6 +82,7 @@ func NewECPrimeGroupKey(n int) {
 		}
 		j += 1
 	}
+	log.Println("Init EC")
 	EC = CryptoParams{
 		btcec.S256(),
 		btcec.S256(),
@@ -94,10 +95,10 @@ func NewECPrimeGroupKey(n int) {
 		ch}
 }
 
-//func init() {
-//	EC = NewECPrimeGroupKey(VecLength)
-//	//fmt.Println(EC)
-//}
+func init() {
+	NewECPrimeGroupKey(VecLength)
+	//fmt.Println(EC)
+}
 
 func GetECPrimeGroupKey() CryptoParams {
 	return EC

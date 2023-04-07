@@ -28,7 +28,7 @@ func init() {
 	specialHandle["elliptic.Curve"] = struct{}{}
 	specialHandle["*btcec.KoblitzCurve"] = struct{}{}
 
-	//EC = NewECPrimeGroupKey(VecLength)
+	NewECPrimeGroupKey(VecLength)
 }
 
 func Serialize2Bytes(obj interface{}) ([]byte, error) {

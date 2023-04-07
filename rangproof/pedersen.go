@@ -1,9 +1,9 @@
 package rangproof
 
-import(
-	"math/big"
+import (
 	"crypto/rand"
-) 
+	"math/big"
+)
 
 type PedersenCommit struct {
 	//G ECPoint // G value for commitments of a single value

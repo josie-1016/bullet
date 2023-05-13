@@ -126,9 +126,33 @@ func Deserialize2Struct(bytes []byte, obj interface{}) error {
 	return e
 }
 
-func deserialize2Struct(data map[string]interface{}, obj interface{}) (interface{}, error) {
+func Deserialize2StructTest(obj interface{}) {
 	t := reflect.TypeOf(obj)
 	v := reflect.ValueOf(obj)
+	if t.Kind() == reflect.Ptr {
+		t = t.Elem()
+		v = v.Elem()
+	}
+	for i := 0; i < t.NumField(); i++ {
+		fmt.Println(t.Field(i).Name, t.Field(i).Type, v.Field(i))
+
+		if t.Field(i).Type.Kind() == reflect.Struct {
+			Deserialize2StructTest(reflect.New(t.Field(i).Type))
+			//structField := v.Field(i).Type()
+			//for j := 0; j < structField.NumField(); j++ {
+			//	fmt.Printf("%s %s = %V -tag:%s \n", structField.Field(j).Name, structField.Field(j).Type,
+			//		v.Field(i).Field(j).Interface(),
+			//		structField.Field(j).Tag)
+			//}
+		}
+	}
+}
+
+func deserialize2Struct(data map[string]interface{}, obj interface{}) (interface{}, error) {
+	//fmt.Println(data)
+	t := reflect.TypeOf(obj)
+	v := reflect.ValueOf(obj)
+	//fmt.Println(t.Kind())
 	if t.Kind() == reflect.Ptr {
 		t = t.Elem()
 		v = v.Elem()
@@ -147,8 +171,12 @@ func deserialize2Struct(data map[string]interface{}, obj interface{}) (interface
 			}
 			continue
 		}
-
-		switch field.Type.Kind() {
+		//log.Println(field.Type.Kind())
+		k := field.Type
+		if k.Kind() == reflect.Ptr {
+			k = k.Elem()
+		}
+		switch k.Kind() {
 		case reflect.Slice:
 			innerType := field.Type.Elem()
 			tempArray := data[field.Name].([]interface{})
@@ -170,7 +198,21 @@ func deserialize2Struct(data map[string]interface{}, obj interface{}) (interface
 					if err != nil {
 						return nil, err
 					}
-					tempData.Index(i).Set(reflect.ValueOf(result))
+					t := reflect.TypeOf(result)
+					v := reflect.ValueOf(result)
+					//fmt.Println(t.Kind())
+					//fmt.Println("slice", field.Type.Kind())
+					if field.Type.Elem().Kind() == reflect.Ptr {
+						tempData.Index(i).Set(reflect.ValueOf(result))
+						continue
+					}
+					if t.Kind() == reflect.Ptr {
+						t = t.Elem()
+						v = v.Elem()
+						tempData.Index(i).Set(v)
+					} else {
+						tempData.Index(i).Set(reflect.ValueOf(result))
+					}
 				}
 			}
 			value.Set(tempData)
@@ -207,13 +249,42 @@ func deserialize2Struct(data map[string]interface{}, obj interface{}) (interface
 			value.Set(tempData)
 			continue
 		case reflect.Struct:
-			result, err := deserialize2Struct(data[field.Name].(map[string]interface{}), reflect.New(field.Type))
+			//a := data[field.Name].(map[string]interface{})
+			//fmt.Println(a)
+			//fmt.Println(field.Type.Kind())
+			result, err := deserialize2Struct(data[field.Name].(map[string]interface{}), reflect.New(k).Interface())
 			if err != nil {
 				return nil, err
 			}
-			value.Set(reflect.ValueOf(result))
+			t := reflect.TypeOf(result)
+			v := reflect.ValueOf(result)
+			//fmt.Println(t.Kind())
+			if field.Type.Kind() == reflect.Ptr {
+				value.Set(reflect.ValueOf(result))
+				continue
+			}
+			if t.Kind() == reflect.Ptr {
+				t = t.Elem()
+				v = v.Elem()
+				value.Set(v)
+			} else {
+				value.Set(reflect.ValueOf(result))
+			}
+			//value.Set(v)
 			continue
+		//case reflect.Ptr:
+		//	a := field.Name
+		//	fmt.Println(a)
+		//	fmt.Println(data["Comm"].(map[string]interface{}))
+		//	result, err := deserialize2Struct(data["Comm"].(map[string]interface{}), reflect.New(field.Type))
+		//	if err != nil {
+		//		return nil, err
+		//	}
+		//	value.Set(reflect.ValueOf(result))
+		//	continue
 		default:
+			//b := data[field.Name]
+			//fmt.Println(b)
 			value.Set(reflect.ValueOf(data[field.Name]))
 		}
 	}

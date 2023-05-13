@@ -131,16 +131,19 @@ func PowerVector(l int, base *big.Int) []*big.Int {
 	return result
 }
 
-func RandVector(l int) []*big.Int {
+func RandVector(l int) ([]*big.Int, error) {
 	result := make([]*big.Int, l)
 
 	for i := 0; i < l; i++ {
 		x, err := rand.Int(rand.Reader, EC.N)
+		if err != nil {
+			return nil, err
+		}
 		check(err)
 		result[i] = x
 	}
 
-	return result
+	return result, nil
 }
 
 func VectorSum(y []*big.Int) *big.Int {

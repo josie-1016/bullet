@@ -83,7 +83,7 @@ func CalculateR(aR, sR, y, po2 []*big.Int, z, x *big.Int) []*big.Int {
 	return result
 }
 
-func RPProve(v *big.Int, gamma *big.Int) (*RangeProof, *PedersenCommit, *big.Int) {
+func RPProve(v *big.Int, gamma *big.Int) (*RangeProof, *PedersenCommit, *big.Int, error) {
 
 	rpresult := new(RangeProof)
 	commit := new(PedersenCommit)
@@ -91,11 +91,13 @@ func RPProve(v *big.Int, gamma *big.Int) (*RangeProof, *PedersenCommit, *big.Int
 	PowerOfTwos := PowerVector(EC.V, big.NewInt(2))
 
 	if v.Cmp(big.NewInt(0)) == -1 {
-		panic("Value is below range! Not proving")
+		return nil, nil, nil, fmt.Errorf("value is below range")
+		//panic("Value is below range! Not proving")
 	}
 
 	if v.Cmp(new(big.Int).Exp(big.NewInt(2), big.NewInt(int64(EC.V)), EC.N)) == 1 {
-		panic("Value is above range! Not proving.")
+		return nil, nil, nil, fmt.Errorf("value is above range")
+		//panic("Value is above range! Not proving.")
 	}
 	if gamma == nil {
 		//gamma, err = rand.Int(rand.Reader, EC.N)
@@ -117,16 +119,27 @@ func RPProve(v *big.Int, gamma *big.Int) (*RangeProof, *PedersenCommit, *big.Int
 	aR := VectorAddScalar(aL, big.NewInt(-1))
 
 	alpha, err := rand.Int(rand.Reader, EC.N)
-	check(err)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	//check(err)
 
 	A := TwoVectorPCommitWithGens(EC.BPG, EC.BPH, aL, aR).Add(EC.H.Mult(alpha))
 	rpresult.A = A
 
-	sL := RandVector(EC.V)
-	sR := RandVector(EC.V)
-
+	sL, err := RandVector(EC.V)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	sR, err := RandVector(EC.V)
+	if err != nil {
+		return nil, nil, nil, err
+	}
 	rho, err := rand.Int(rand.Reader, EC.N)
-	check(err)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	//check(err)
 
 	S := TwoVectorPCommitWithGens(EC.BPG, EC.BPH, sL, sR).Add(EC.H.Mult(rho))
 	rpresult.S = S
@@ -181,9 +194,15 @@ func RPProve(v *big.Int, gamma *big.Int) (*RangeProof, *PedersenCommit, *big.Int
 
 	// given the t_i values, we can generate commitments to them
 	tau1, err := rand.Int(rand.Reader, EC.N)
-	check(err)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	//check(err)
 	tau2, err := rand.Int(rand.Reader, EC.N)
-	check(err)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	//check(err)
 
 	T1 := EC.G.Mult(t1).Add(EC.H.Mult(tau1)) //commitment to t1
 	T2 := EC.G.Mult(t2).Add(EC.H.Mult(tau2)) //commitment to t2
@@ -258,7 +277,7 @@ func RPProve(v *big.Int, gamma *big.Int) (*RangeProof, *PedersenCommit, *big.Int
 
 	rpresult.IPP = InnerProductProve(left, right, that, P, EC.U, EC.BPG, HPrime)
 
-	return rpresult, commit, gamma
+	return rpresult, commit, gamma, nil
 }
 
 func RPVerify(rp *RangeProof, commit *PedersenCommit) bool {
@@ -336,9 +355,9 @@ func RPVerify(rp *RangeProof, commit *PedersenCommit) bool {
 	return true
 }
 
-func SubProof(v1 *big.Int, v2 *big.Int, com1 *PedersenCommit, open1 *big.Int) (*RangeProof, *PedersenCommit, *big.Int) {
+func SubProof(v1 *big.Int, v2 *big.Int, com1 *PedersenCommit, open1 *big.Int) (*RangeProof, *PedersenCommit, *big.Int, error) {
 	v := new(big.Int)
 	//commit,_ := bp.PedersenAddNum(com1.Comm, v2)
-	proof, com, open := RPProve(v.Sub(v1, v2), open1)
-	return proof, com, open
+	proof, com, open, err := RPProve(v.Sub(v1, v2), open1)
+	return proof, com, open, err
 }
